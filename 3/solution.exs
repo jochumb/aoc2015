@@ -37,6 +37,7 @@ end
 {_,visited} = IO.read(file, :line)
     |> String.split("")
     |> Enum.reduce({{0,0}, []}, &Grid.next_house/2)
+File.close(file)
 
 IO.puts "Visited by santa: #{Enum.count(visited)}"
 
@@ -44,5 +45,6 @@ IO.puts "Visited by santa: #{Enum.count(visited)}"
 {_,_,visited} = IO.read(file, :line)
     |> String.split("")
     |> Enum.reduce({{0,0}, {0,0}, []}, &Grid.next_house/2)
+File.close(file)
 
 IO.puts "Visited by santa or robot: #{Enum.count(visited)}"

@@ -12,6 +12,7 @@ end
 {_, floor, basement} = IO.read(file, :line)
     |> String.split("")
     |> Enum.reduce({1,0,0}, &Floor.next_floor/2)
+File.close(file)
 
 IO.puts "Go to floor #{floor}"
 IO.puts "First time basement at move #{basement}"

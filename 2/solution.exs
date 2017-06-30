@@ -22,6 +22,7 @@ end
 {surface, ribbon} = IO.stream(file, :line)
     |> Stream.map(&Package.convert_line_to_tuple/1)
     |> Enum.reduce({0,0}, &Package.accumulate_surface_and_ribbon/2)
+File.close(file)
 
 IO.puts "Total packaging material needed: #{surface} sq ft"
 IO.puts "Total ribbon length required: #{ribbon} ft"
