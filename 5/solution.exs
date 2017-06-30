@@ -11,3 +11,13 @@ nice = IO.stream(file, :line)
     |> Enum.to_list
 
 IO.puts "Number of nice strings (1): #{Enum.count(nice)}"
+
+
+{:ok, file} = File.open("input", [:read])
+nice = IO.stream(file, :line)
+    |> Stream.map(&String.rstrip/1)
+    |> Stream.filter(&(String.match?(&1, ~r{(\w\w).*\1+})))
+    |> Stream.filter(&(String.match?(&1, ~r{(\w)(\w)\1+})))
+    |> Enum.to_list
+
+IO.puts "Number of nice strings (2): #{Enum.count(nice)}"
