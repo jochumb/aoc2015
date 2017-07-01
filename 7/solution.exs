@@ -9,6 +9,7 @@ defmodule BitwiseGates do
         |> Stream.map(&String.rstrip/1)
         |> Stream.map(&parse_line/1)
         |> Enum.reduce(%{}, &add_command_to_map/2)
+    File.close(file)
     map
   end
 
