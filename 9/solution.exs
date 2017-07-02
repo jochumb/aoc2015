@@ -4,12 +4,8 @@ defmodule HeldKarp do
     subsets = create_subsets(Enum.count(dists)-1)
     # subsets = [ {} | [ {1} | [ {2} | [ .. | [ {1,2,..,n-2,n-1} | [] ]]]]]
     keys = create_keys(Enum.count(dists)-1, subsets)
-    # keys = for s <- subsets,
-    #     i <- 1..n,
-    #     i not in s,
-    #     do: {i, s}
     
-    # costs = keys |> Enum.reduce(%{}, determine_cost)
+    costs = keys |> Enum.reduce(%{}, fn (key, acc) -> calculate_minimum_costs(key, acc, dists) end)
     # costs[{index, {subset}}] = {cost, parent}
 
 
@@ -17,14 +13,13 @@ defmodule HeldKarp do
 
     # Create path from parents
     # return {cost, path}
-    keys
+    costs
   end
 
   defp create_subsets(n) do
-    subsets = 1..n-1 
+    1..n-1 
         |> Enum.map(&(create_combinations_with_size(&1, Enum.to_list(1..n))))
         |> Enum.reduce([], fn (x, acc) -> acc ++ x end)
-    [{} | subsets]
   end
 
   defp create_combinations_with_size(s, l) do
@@ -42,6 +37,31 @@ defmodule HeldKarp do
         i <- 1..n,
         !(i in Tuple.to_list(s)),
         do: {i, s}
+  end
+
+  @infinite = 2147483647
+  defp calculate_minimum_costs({i, subset} = key, acc, dists) do
+    cost = 0..Enum.count(subset)
+      |> Enum.map(&(calculate_costs(&1, key, acc, dists)))
+      |> Enum.map({@infinite,-1}, &reduce_to_minimum/2)
+    Map.put(acc, key, cost)
+  end
+
+  defp calculate_costs(n, {i, subset}, acc, dists) do
+    subset_node = elem(subset, n)
+    reduced_subset = Tuple.delete_at(subset, n)
+    {dists[i][subset_node] + get_costs_from_map({subset_node, reduced_subset}, acc, dists), subset_node}
+  end
+
+  defp get_costs_from_map({i, {}}, _acc, dists), do: dists[0][i]
+  defp get_costs_from_map(key, acc, _dists), do: Map.get(acc, key)
+
+  defp reduce_to_minimum({costs, node}, {cur_min, cur_node}) do
+    if costs <= current_min do
+      {costs, node}
+    else
+      {cur_min, cur_node}
+    end
   end
 end
 
