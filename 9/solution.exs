@@ -3,7 +3,7 @@ defmodule HeldKarp do
   def shortest(dists) do
     subsets = create_subsets(Enum.count(dists)-1)
     # subsets = [ {} | [ {1} | [ {2} | [ .. | [ {1,2,..,n-2,n-1} | [] ]]]]]
-
+    keys = create_keys(Enum.count(dists)-1, subsets)
     # keys = for s <- subsets,
     #     i <- 1..n,
     #     i not in s,
@@ -17,13 +17,13 @@ defmodule HeldKarp do
 
     # Create path from parents
     # return {cost, path}
-    subsets
+    keys
   end
 
-  defp create_subsets(num) do
-    subsets = 1..num-1 
-    |> Enum.map(&(create_combinations_with_size(&1, Enum.to_list(1..num))))
-    |> Enum.reduce([], fn (x, acc) -> acc ++ x end)
+  defp create_subsets(n) do
+    subsets = 1..n-1 
+        |> Enum.map(&(create_combinations_with_size(&1, Enum.to_list(1..n))))
+        |> Enum.reduce([], fn (x, acc) -> acc ++ x end)
     [{} | subsets]
   end
 
@@ -35,6 +35,13 @@ defmodule HeldKarp do
   defp comb(_, []), do: []
   defp comb(m, [h|t]) do
     (for l <- comb(m-1, t), do: [h|l]) ++ comb(m, t)
+  end
+
+  defp create_keys(n, subsets) do
+    for s <- subsets,
+        i <- 1..n,
+        !(i in Tuple.to_list(s)),
+        do: {i, s}
   end
 end
 
