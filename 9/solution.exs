@@ -1,9 +1,41 @@
 defmodule HeldKarp do
   
-  def shortest(_dists) do
-    0
+  def shortest(dists) do
+    subsets = create_subsets(Enum.count(dists)-1)
+    # subsets = [ {} | [ {1} | [ {2} | [ .. | [ {1,2,..,n-2,n-1} | [] ]]]]]
+
+    # keys = for s <- subsets,
+    #     i <- 1..n,
+    #     i not in s,
+    #     do: {i, s}
+    
+    # costs = keys |> Enum.reduce(%{}, determine_cost)
+    # costs[{index, {subset}}] = {cost, parent}
+
+
+    # {0, {1,2,..,n-1,n}} -> determine_cost
+
+    # Create path from parents
+    # return {cost, path}
+    subsets
   end
 
+  defp create_subsets(num) do
+    subsets = 1..num-1 
+    |> Enum.map(&(create_combinations_with_size(&1, Enum.to_list(1..num))))
+    |> Enum.reduce([], fn (x, acc) -> acc ++ x end)
+    [{} | subsets]
+  end
+
+  defp create_combinations_with_size(s, l) do
+    comb(s, l) |> Enum.map(&List.to_tuple/1)
+  end
+ 
+  defp comb(0, _), do: [[]]
+  defp comb(_, []), do: []
+  defp comb(m, [h|t]) do
+    (for l <- comb(m-1, t), do: [h|l]) ++ comb(m, t)
+  end
 end
 
 defmodule Cities do
@@ -55,4 +87,6 @@ lines = Cities.parse("input")
 cities = Cities.cities(lines)
 distances = Cities.distances(lines, cities)
 
-IO.inspect distances
+subsets = HeldKarp.shortest(distances)
+
+IO.inspect subsets
