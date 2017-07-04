@@ -1,21 +1,23 @@
 defmodule LookSay do
-  
   def pass(input) do
     res = translate(input, [], [])
       |> Enum.reverse
     res
   end
   
-  def translate([], [], acc), do: acc
-  def translate([], [prev | rest], acc), do: translate([], [], [prev | [Enum.count(rest)+1 | acc]])
-  def translate([head | tail], [], acc), do: translate(tail, [head], acc)
-  def translate([head | tail], [prev | rest], acc) do
-    case head do
-      n when head == prev -> translate(tail, [head | [n | rest]], acc)
-      _ -> translate(tail, [head], [prev | [Enum.count(rest)+1 | acc]])
-    end
+  defp translate([], [], acc), do: acc
+  defp translate([head | tail], [], acc), do: translate(tail, [head], acc)
+  defp translate([], [prev | rest], acc) do
+    translate([], [], add_to_result(prev, rest, acc))
   end
-
+  defp translate([head | tail], [prev | rest], acc) when head == prev  do
+    translate(tail, [head | [prev | rest]], acc)
+  end
+  defp translate([head | tail], [prev | rest], acc) do
+    translate(tail, [head], add_to_result(prev, rest, acc))
+  end
+  
+  defp add_to_result(prev, rest, acc), do: [prev | [Enum.count(rest)+1 | acc]]
 end
 
 input = "1321131112" |> String.codepoints |> Enum.map(&String.to_integer/1)
