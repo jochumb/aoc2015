@@ -36,9 +36,8 @@ defmodule Ingredient do
   defp _best_distribution([dist|t], ingredients, val, val_500) do
     current = 0..Enum.count(ingredients)-1
       |> Enum.map(&(update_spoons_for_ingredient(&1, ingredients, dist)))
-    cal_proof = has_500_cals? current
     current_val = calculate current
-    val_500 = if cal_proof and current_val > val_500, do: current_val, else: val_500
+    val_500 = if has_500_cals?(current) and current_val > val_500, do: current_val, else: val_500
     if current_val > val do
       _best_distribution(t, ingredients, current_val, val_500)
     else
@@ -49,16 +48,13 @@ defmodule Ingredient do
   defp update_spoons_for_ingredient(index, ingredients, dists) do
     %{Enum.at(ingredients, index) | spoons: Enum.at(dists, index) }
   end
-
+  
+  def buckets_and_balls(0, _), do: [[]]
   def buckets_and_balls(buckets, balls) do
-    perm_rep(Enum.to_list(0..balls), buckets) 
-      |> Enum.filter(fn (x) -> Enum.sum(x) == balls end)
-  end
-
-  def perm_rep([], _), do: [[]]
-  def perm_rep(_,  0), do: [[]]
-  def perm_rep(list, i) do
-    for x <- list, y <- perm_rep(list, i-1), do: [x|y]
+    for x <- 0..balls,
+        y <- buckets_and_balls(buckets-1, balls-x),
+        x + Enum.sum(y) == balls,
+        do: [x|y]
   end
 
   def calculate(ingredients) do
