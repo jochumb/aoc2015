@@ -27,12 +27,16 @@ defmodule Reindeer do
   defp loop_for_seconds(reindeers, 0) do
     reindeers
       |> max_distance
-      |> IO.puts
+      |> (fn (x) -> IO.puts("Part 1: #{x}") end).()
+    reindeers
+      |> max_points
+      |> (fn (x) -> IO.puts("Part 2: #{x}") end).()
   end
 
   defp loop_for_seconds(reindeers, secs) do
     reindeers
         |> Enum.map(&tick_one_second/1)
+        |> assign_point_to_leader
         |> loop_for_seconds(secs-1)
   end
 
@@ -55,6 +59,23 @@ defmodule Reindeer do
         if d > acc, do: d,
         else: acc  
       end)
+  end
+
+  defp max_points(reindeers) do
+    reindeers
+      |> Enum.reduce(0, fn (%Reindeer{points: p}, acc) -> 
+        if p > acc, do: p,
+        else: acc  
+      end)
+  end
+  
+  defp assign_point_to_leader(reindeers) do
+    leader_distance = reindeers |> max_distance
+    reindeers
+      |> Enum.map(fn (%Reindeer{distance: d, points: p} = r) ->
+            if d == leader_distance, do: %Reindeer{r | points: p+1},
+            else: r
+         end)
   end
 
 end
