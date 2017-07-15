@@ -1,10 +1,9 @@
 defmodule Reindeer do
+  defstruct name: "", speed: 0, fly_time: 0, rest_time: 0, distance: 0, points: 0, mode: :fly, remaining: 0
 
   def run(filename, seconds) do
     parse(filename)
-      |> Enum.map(&(distance_after_seconds(&1, seconds)))
-      |> Enum.max
-      |> IO.inspect
+        |> loop_for_seconds(seconds)
   end
   
   defp parse(filename) do
@@ -18,25 +17,44 @@ defmodule Reindeer do
     lines
   end
 
-  defp clean_tuple({reindeer, _, _, speed, _, _, time, _, _, _, _, _, _, rest, _}), 
-    do: {reindeer, String.to_integer(speed), String.to_integer(time), String.to_integer(rest)} 
-
-  defp distance_after_seconds({_, _, fly_time, _} = reindeer, seconds) do
-    pass_one_second(:fly, 0, seconds, fly_time, reindeer)
+  defp clean_tuple({name, _, _, speed, _, _, fly_time, _, _, _, _, _, _, rest_time, _}) do
+    speed = String.to_integer(speed)
+    fly_time = String.to_integer(fly_time)
+    rest_time = String.to_integer(rest_time)
+    %Reindeer{name: name, speed: speed, fly_time: fly_time, rest_time: rest_time, remaining: fly_time} 
   end
 
-  defp pass_one_second(_, distance, 0, _, {name, _, _, _}), do: distance
-  defp pass_one_second(:fly, distance, seconds, fly_time, {_, speed, _, _} = reindeer) when fly_time > 1 do
-    pass_one_second(:fly, distance+speed, seconds-1, fly_time-1, reindeer)
+  defp loop_for_seconds(reindeers, 0) do
+    reindeers
+      |> max_distance
+      |> IO.puts
   end
-  defp pass_one_second(:fly, distance, seconds, _, {_, speed, _, rest_time} = reindeer) do
-    pass_one_second(:rest, distance+speed, seconds-1, rest_time, reindeer)
+
+  defp loop_for_seconds(reindeers, secs) do
+    reindeers
+        |> Enum.map(&tick_one_second/1)
+        |> loop_for_seconds(secs-1)
   end
-  defp pass_one_second(:rest, d, seconds, rest_time, reindeer) when rest_time > 1 do
-    pass_one_second(:rest, d, seconds-1, rest_time-1, reindeer)
+
+  defp tick_one_second(%Reindeer{mode: :fly, distance: d, speed: s, remaining: t, rest_time: new_t} = r) when t == 1 do
+    %Reindeer{r | mode: :rest, distance: d+s, remaining: new_t}
   end
-  defp pass_one_second(:rest, d, seconds, _, {_, _, fly_time, _} = reindeer) do
-    pass_one_second(:fly, d, seconds-1, fly_time, reindeer)
+  defp tick_one_second(%Reindeer{mode: :fly, distance: d, speed: s, remaining: t} = r)do
+    %Reindeer{r | distance: d+s, remaining: t-1}
+  end
+  defp tick_one_second(%Reindeer{mode: :rest, remaining: t, fly_time: new_t} = r) when t == 1 do
+    %Reindeer{r | mode: :fly, remaining: new_t}
+  end
+  defp tick_one_second(%Reindeer{mode: :rest, remaining: t} = r) do
+    %Reindeer{r | remaining: t-1}
+  end
+
+  defp max_distance(reindeers) do
+    reindeers
+      |> Enum.reduce(0, fn (%Reindeer{distance: d}, acc) -> 
+        if d > acc, do: d,
+        else: acc  
+      end)
   end
 
 end
