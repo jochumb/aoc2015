@@ -41,7 +41,7 @@ defmodule Aunt do
 
   def find_aunt([aunt|tail], reference, version) do
     if is_match(aunt, reference, version) do
-      Map.get(aunt, :number)
+      aunt.number
     else
       find_aunt(tail, reference, version)
     end
@@ -49,38 +49,25 @@ defmodule Aunt do
 
   defp is_match(aunt, ref, :v1) do
     @compounds
-      |> Enum.map(&same_or_nil(&1, aunt, ref))
+      |> Enum.map(&same_or_nil(Map.get(aunt, &1), Map.get(ref, &1)))
       |> Enum.all?
   end
 
   defp is_match(aunt, ref, :v2) do
     @compounds
-      |> Enum.map(&match_compound(&1, aunt, ref))
+      |> Enum.map(&match_compound(&1, Map.get(aunt, &1), Map.get(ref, &1)))
       |> Enum.all?
   end
 
   defp match_compound(comp, aunt, ref) when comp == :cats or comp == :trees do
-    comp_aunt = Map.get(aunt, comp)
-    comp_ref = Map.get(ref, comp)
-    comp_aunt == nil or comp_aunt > comp_ref
+    aunt == nil or aunt > ref
   end
-
   defp match_compound(comp, aunt, ref) when comp == :pomeranians or comp == :goldfish do
-    comp_aunt = Map.get(aunt, comp)
-    comp_ref = Map.get(ref, comp)
-    comp_aunt == nil or comp_aunt < comp_ref
+    aunt == nil or aunt < ref
   end
+  defp match_compound(_comp, aunt, ref), do: same_or_nil(aunt, ref)
 
-  defp match_compound(comp, aunt, ref) do
-    same_or_nil(comp, aunt, ref)
-  end
-
-  defp same_or_nil(compound, aunt, ref) do
-    comp_aunt = Map.get(aunt, compound)
-    comp_ref = Map.get(ref, compound)
-    comp_aunt == nil or comp_aunt == comp_ref
-  end
-
+  defp same_or_nil(aunt, ref), do: aunt == nil or aunt == ref
 end
 
 ref = Aunt.parse_tape("tape")
